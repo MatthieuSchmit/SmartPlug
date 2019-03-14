@@ -1,0 +1,177 @@
+{% extends 'home/base.html.twig' %}
+
+{% block title %}Profil{% endblock %}
+{% block navbar_title %}Profil{% endblock %}
+
+{% block body_content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-body">
+                    <h5 class="card-title">Change Email</h5>
+
+                    {{ form_start(form_change_email) }}
+
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <strong>Warning !</strong> Not working {{ form_errors(form_change_password) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_widget(form_change_email.email, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+
+                    <button class="btn btn-outline-success" disabled type="submit">Change email</button>
+
+                    {{ form_end(form_change_email) }}
+
+                </div>
+
+                <div class=" card card-body">
+                    <h5 class="card-title">Forgotten password</h5>
+                    <button class="btn btn-outline-success" id="btn_forgotten_pass">Send my an email</button>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card card-body">
+                    <h5 class="card-title">Change Password</h5>
+                    {{ form_start(form_change_password) }}
+
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <strong>Warning !</strong> Not working {{ form_errors(form_change_password) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form_change_password.password, 'Current Password') }}
+                        {{ form_widget(form_change_password.password, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form_change_password.plainPassword.first, 'New Password') }}
+                        {{ form_widget(form_change_password.plainPassword.first, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form_change_password.plainPassword.second, 'Repeat New Password') }}
+                        {{ form_widget(form_change_password.plainPassword.second, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+
+                    <button class="btn btn-outline-success" disabled type="submit">Change password</button>
+
+                    {{ form_end(form_change_password) }}
+                </div>
+            </div>
+
+            <div class="col-md-12" style="margin-top: 10px">
+                <div class="card card-body">
+                    <h5 class="card-title">Your X-Auth-Token</h5>
+                    <div class="alert alert-primary" role="alert">
+                        <div class="btn-group float-right" style="margin-top:-4px">
+                            <button class="btn btn-sm btn-outline-primary" id="show_auth_token">Show</button>
+                            <button class="btn btn-sm btn-outline-primary" id="hide_auth_token" hidden>Hide</button>
+                            <button class="btn btn-sm btn-outline-primary" id="refresh_auth_token">Change It</button>
+                            <button class="btn btn-sm btn-outline-primary" id="copy_auth_token" disabled>Copy</button>
+                        </div>
+                        <span id="auth_token"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $(function () {
+
+            var xxxx_token = '************************************************************************';
+            var auth_token = '{{ app.user.apiToken }}';
+
+            $('#auth_token').text(xxxx_token);
+
+            $('#show_auth_token').click(function () {
+                $('#auth_token').text(auth_token);
+                $('#hide_auth_token').removeAttr('hidden');
+                $(this).attr('hidden', 'hidden');
+            });
+
+            $('#hide_auth_token').click(function () {
+                $('#auth_token').text(xxxx_token);
+                $('#show_auth_token').removeAttr('hidden');
+                $(this).attr('hidden', 'hidden');
+            });
+
+            $('#copy_auth_token').click(function () {
+
+                toastr.warning('Soon...');
+
+                // if(document.execCommand('copy')) {
+                //     toastr.success('Copied !');
+                // } else {
+                //     toastr.error('Error...');
+                // }
+                // https://codeseven.github.io/toastr/demo.html
+
+            });
+
+            $('#refresh_auth_token').click(function () {
+
+                if(confirm("Are you sure ? You will need to change the token in all your apps using the API")) {
+
+                    // change_token
+                    $.ajax({
+                        url: '{{ url('change_token') }}',
+                        headers: {'x-auth-token' : '{{ app.user.apiToken }}'},
+                        type: 'put',
+                        dataType: 'json',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({}),
+                        success: function (response) {
+                            console.log(response);
+
+                            auth_token = response['token'];
+                            if($('#auth_token').text() !== xxxx_token) {
+                                $('#auth_token').text(auth_token);
+                            }
+
+                            toastr.success('Your token has been changed !');
+                            // https://codeseven.github.io/toastr/demo.html
+
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            if(jqXHR.status === 400) {
+
+                            }
+                        }
+                    });
+
+                }
+            });
+
+            $('#btn_forgotten_pass').click(function () {
+                $.ajax({
+                    url: '{{ url('app_forgotten_password') }}',
+                    headers: {'x-auth-token' : '{{ app.user.apiToken }}'},
+                    type: 'post',
+                    data: {
+                        'email': '{{ app.user.email }}'
+                    },
+                    success: function (response) {
+                        console.log(response);
+
+                        toastr.success('Email sended !');
+                        // https://codeseven.github.io/toastr/demo.html
+
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        toastr.error('Woops.. Error ' + jqXHR.status);
+                        if(jqXHR.status === 400) {
+                        }
+                    }
+                });
+            });
+
+        });
+    </script>
+{% endblock %}

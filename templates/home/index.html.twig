@@ -1,0 +1,126 @@
+{% extends 'home/base.html.twig' %}
+
+{% block title %}SmartPlug{% endblock %}
+
+{% block navbar_title %}Home{% endblock %}
+
+{% block body_content %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 card card-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Power strip name"
+                           aria-describedby="add_power_strip" id="input_add_power_strip">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-success" type="button" id="add_power_strip">Add a power strip</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <img id="imgAppl" src="{{ asset('assets/img/on_app_store.png') }}" class="float-right img-fluid" width="150" alt="on_app_store">
+            </div>
+
+            <div class="col-md-12 card card-body">
+                <h5 class="card-title">All your power strips</h5>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Nb Plugs</th>
+                        <th width="20px" class="text-center"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for powerstrip in powerstrips %}
+                        <tr>
+                            <td>{{ powerstrip.id }}</td>
+                            <td>{{ powerstrip.name }}</td>
+                            <td>{{ powerstrip.plugs.count }}</td>
+                            <td>
+                                <a href="{{ path('app_get_ps', {'id' : powerstrip.id }) }}" class="btn btn-sm btn-outline-info"><i class="fa fa-info-circle"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!--
+            <div class="col-md-12 card card-body">
+                <h5 class="card-title">Logs</h5>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Method</th>
+                        <th>URI</th>
+                        <th>IP Address</th>
+                        <th>PowerStrip</th>
+                        <th>Date</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td>{{ log.user.email }}</td>
+                            <td>{{ log.method }}</td>
+                            <td>{{ log.url }}</td>
+                            <td>{{ log.ip }}</td>
+                            <td>{{ log.powerstrip.name }}</td>
+                            <td>{{ log.date|date('Y-m-d H:i:s') }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            -->
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+    <script>
+        $(function () {
+
+            $('#imgAppl').click(function () {
+                toastr.warning('Soon...');
+            });
+
+            // Add ps
+            $('#add_power_strip').click(function () {
+
+                var name = $('#input_add_power_strip').val();
+
+                console.log('Name : ' + name);
+
+                if (name !== '') {
+                    $.ajax({
+                        url: '{{ path('v0_store_ps') }}',
+                        headers: {
+                            'x-auth-token' : '{{ app.user.apiToken }}'
+                        },
+                        type: 'post',
+                        dataType: 'json',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({'name' : name,}),
+                        success: function (response) {
+                            location.reload();
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            if(jqXHR.status === 400) {
+
+                            }
+                        }
+                    });
+                }
+            });
+
+        });
+    </script>
+{% endblock %}

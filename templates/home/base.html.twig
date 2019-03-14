@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <style>
+        #wrapper {
+            margin-top: 70px;
+        }
+    </style>
+
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand text-warning" href="#">{% block navbar_title %}{% endblock %}</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+
+            </ul>
+            <div class="btn-group">
+                <a href="{{ path('home') }}"
+                   class="btn btn-outline-warning {{ (app.request.attributes.get('_route') == 'home') ? 'active' : '' }}"
+                >Home</a>
+                <a href="{{ path('calendar') }}"
+                   class="btn btn-outline-warning {{ (app.request.attributes.get('_route') == 'calendar') ? 'active' : '' }}"
+                >Calendar</a>
+                <a href="{{ path('doc') }}"
+                   class="btn btn-outline-warning {{ (app.request.attributes.get('_route') == 'doc') ? 'active' : '' }}"
+                >Documentation</a>
+                <a href="{{ path('user_profile') }}"
+                   class="btn btn-outline-warning {{ (app.request.attributes.get('_route') == 'user_profile') ? 'active' : '' }}"
+                >Profil</a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('admin') }}"
+                       class="btn btn-outline-warning {{ (app.request.attributes.get('_route') == 'admin') ? 'active' : '' }}"
+                    >Admin</a>
+                {% endif %}
+                <a href="{{ path('app_logout') }}" class="btn btn-outline-warning">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="wrapper">
+        {% block body_content %}{% endblock %}
+    </div>
+
+
+{% endblock %}

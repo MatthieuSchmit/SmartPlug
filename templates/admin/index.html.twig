@@ -1,0 +1,53 @@
+{% extends 'home/base.html.twig' %}
+
+{% block title %}Administration{% endblock %}
+{% block navbar_title %}Admin{% endblock %}
+
+{% block body_content %}
+    <style>
+        .admin-nav {
+            height: 100vh;
+            width: 200px;
+            background-color: #343a40;
+            margin-top: -70px;
+            position: fixed;
+        }
+    </style>
+
+    <!-- <div class="admin-nav"></div> -->
+
+    <div class="container">
+
+        <div class="card card-body">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Number PS</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.countPowerStrip }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $(function () {
+
+        });
+    </script>
+{% endblock %}

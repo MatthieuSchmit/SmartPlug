@@ -1,0 +1,11 @@
+
+
+.card {
+    margin-bottom: 10px;
+}
+body {
+    background-color:#cccccc
+}
+.btn, .form-control, .card, .card-body, .flat-element, .alert, .list-group {
+    /*border-radius:0px;*/
+}

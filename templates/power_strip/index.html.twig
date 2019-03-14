@@ -1,0 +1,250 @@
+{% extends 'home/base.html.twig' %}
+
+{% block title %}SmartPlug{% endblock %}
+
+{% block navbar_title %} <span id="name_ps">{{ ps.name }}</span> {% endblock %}
+
+{% block body_content %}
+
+    <div class="container">
+        <div class="row">
+            <!--
+            <a href="{{ url('home') }}" class="btn btn-warning btn-sm"><i class="fa fa-home"></i></a>
+            <div class="col-md-12" style="height: 10px"></div>
+            -->
+            <div class="col-md-6 card card-body">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Plug name"
+                           aria-describedby="add_plug" id="input_add_plug">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-success" type="button" id="add_plug">Add a plug</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 card card-body justify-content-center">
+                <div class="btn-group">
+                    <button class="btn btn-outline-warning" id="update_name"><i class="fa fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" id="delete_ps"><i class="fa fa-trash"></i></button>
+                </div>
+            </div>
+
+            <div class="col-md-12 card card-body">
+                <h5 class="card-title">Plugs</h5>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th></th>
+                        <th width="40px" class="text-center"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for plug in ps.plugs %}
+                        <tr>
+                            <td>{{ plug.id }}</td>
+                            <td id="plug_name_{{ plug.id }}">{{ plug.name }}</td>
+                            <td>
+                                <button data-strip="{{ ps.id }}" data-id="{{ plug.id }}"
+                                        class="btn_switch btn btn-sm btn-{{ (plug.tempState) ? 'primary' : 'secondary' }}"
+                                >{{ (plug.tempState) ? 'ON' : 'OFF' }}</button>
+
+                                {% if(plug.state != plug.tempState) %}
+                                Etat réel : {{ (plug.state) ? 'ON' : 'OFF' }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-warning edit_name_plug" data-plug="{{ plug.id }}">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete_plug" data-plug="{{ plug.id }}">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!--
+            <div class="col-md-12 card card-body">
+                <h5 class="card-title">Logs</h5>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Method</th>
+                        <th>URI</th>
+                        <th>IP</th>
+                    </tr>
+                    </thead>
+                    {% for log in ps.accessLog | reverse %}
+                        <tr>
+                            <td>{{ log.date | date('Y-m-d H:i:s') }}</td>
+                            <td>{{ log.method }}</td>
+                            <td>{{ log.url }}</td>
+                            <td>{{ log.ip }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            -->
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+    <script>
+        $(function () {
+
+            // ON-OFF
+            $('.btn_switch').click(function () {
+
+                var plug = $(this);
+
+                var url = '{{ path("v0_update_wanted_state", {'id': 'id', 'state':'wantedState'}) }}';
+                url = url
+                    .replace("id", plug.data('id'))
+                    .replace('wantedState', (plug.text() === 'ON')? '0':'1' );
+
+                $.ajax({
+                    url: url,
+                    headers: {
+                        'x-auth-token' : '{{ app.user.apiToken }}'
+                    },
+                    type: 'put',
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    data: {},
+                    success: function (response) {
+                        console.log(response);
+
+                        if(plug.text() === 'ON') {
+                            plug.removeClass('btn-primary').addClass('btn-secondary').text('OFF');
+                        } else {
+                            plug.removeClass('btn-secondary').addClass('btn-primary').text('ON');
+                        }
+
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        if(jqXHR.status === 400) {
+
+                        }
+                    }
+                });
+            });
+
+            // Edit name ps
+            $('#update_name').click(function () {
+                var ps_id = {{ ps.id }};
+                var newName = prompt("New name ?");
+
+                if (newName !== null) {
+
+                    var url = '{{ path("v0_update_name_ps", {'id': 'id'}) }}';
+                    url = url.replace("id", ps_id);
+
+                    $.ajax({
+                        url: url,
+                        headers: {'x-auth-token' : '{{ app.user.apiToken }}'},
+                        type: 'put',
+                        dataType: 'json',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            'name' : newName
+                        }),
+                        success: function (response) {
+                            console.log(response);
+                            $('#name_ps').text(newName);
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            if(jqXHR.status === 400) {
+
+                            }
+                        }
+                    });
+                }
+
+            });
+
+            // Add plug
+            $('#add_plug').click(function () {
+                var ps_id = {{ ps.id }};
+                var plugName = $('#input_add_plug').val();
+
+                if(plugName !== null) {
+                    var url = '{{ path("v0_add_plug_ps", {'id': 'id', 'plugName':'name'}) }}';
+                    url = url.replace("id", ps_id).replace("name", plugName);
+
+                    $.ajax({
+                        url: url,
+                        headers: {'x-auth-token' : '{{ app.user.apiToken }}'},
+                        type: 'post',
+                        dataType: 'json',
+                        contentType: "application/json; charset=utf-8",
+                        data: {},
+                        success: function (response) {
+                            location.reload();
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            if(jqXHR.status === 400) {
+
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Edit name plug
+            $('.edit_name_plug').click(function () {
+                var plug_id = $(this).data('plug');
+                var newName = prompt("New name ?");
+
+                if (newName !== null) {
+
+                    var url = '{{ path("v0_update_name_plug", {'id': 'id'}) }}';
+                    url = url.replace("id", plug_id);
+
+                    $.ajax({
+                        url: url,
+                        headers: {'x-auth-token' : '{{ app.user.apiToken }}'},
+                        type: 'put',
+                        dataType: 'json',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            'name' : newName
+                        }),
+                        success: function (response) {
+                            console.log(response);
+                            $('#plug_name_' + plug_id).text(newName);
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            if(jqXHR.status === 400) {
+
+                            }
+                        }
+                    });
+                }
+            });
+
+
+            // TODO : Delete ps
+            $('#delete_ps').click(function () {
+                toastr.warning('Soon...');
+            });
+
+            // TODO : Delete plug
+            $('.delete_plug').click(function () {
+                toastr.warning('Soon...');
+            });
+
+        });
+    </script>
+{% endblock %}
